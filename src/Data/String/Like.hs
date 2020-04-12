@@ -1,6 +1,36 @@
 {-# LANGUAGE FlexibleInstances, Safe #-}
 
-module Data.String.Like where
+{-|
+Module      : Data.String.Like
+Description : A module that aims to provide a uniform interface to string-like types.
+Maintainer  : hapytexeu+gh@gmail.com
+Stability   : experimental
+Portability : POSIX
+
+The module defines a typeclass that can be implemented to provide a uniform interface for 'String'-like objects (like 'String', 'LT.Text', etc.).
+
+The typeclass itself has default implementations that convert the 'StringLike' item first to a lazy 'LT.Text', then performs the operation, and
+converts results back to its 'StringLike' object. This is usually /not/ as efficient as an operation for that specific type. Therefore it is advisable
+to implement the other functions as well. One can however decide to only implement 'fromText' and 'toText'; or 'toString'.
+
+The module contains instances for 'String', 'T.Text', 'LT.Text', 'BS.ByteString' and 'LBS.ByteString'.
+-}
+
+module Data.String.Like(
+    StringLike(
+        empty, cons, snoc, uncons, unsnoc
+      , length, compareLength
+      , toString, fromChar
+      , strMap, strConcat, strConcatMap, append
+      , strAny, strAll, strNull
+      , intercalate, intersperse
+      , transpose, reverse
+      , toLower, toUpper, toTitle
+      , fromText, toText
+    )
+  , IsString(fromString)
+  , convertStringLike
+  ) where
 
 import Prelude as P
 
@@ -16,55 +46,99 @@ import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
 import Data.Text.Lazy.Encoding
 
+-- | A typeclass that provides a uniform interface for string-like objects.
 class IsString a => StringLike a where
+    -- | Return an empty string-like object.
     empty :: a
     empty = fromText LT.empty
+    -- | Create a stringlike object by prepending a 'Char' to an already
+    -- existing string-like object.
     cons :: Char -> a -> a
     cons = _sandwich . LT.cons
+    -- | Create a stringlike object by appending a 'Char' at the end of an
+    -- already existing string-like object.
     snoc :: a -> Char -> a
     snoc a c = _sandwich (`LT.snoc` c) a
+    -- | Unpack a stringlike object by obtaining the first character, and
+    -- the rest of the string, given the string is non-empty. 'Nothing'
+    -- otherwise.
     uncons :: a -> Maybe (Char, a)
-    uncons = fmap (second fromText) . LT.uncons . toText
+    uncons = fmap (second fromText) . _throughText LT.uncons
+    -- | Unpack a string-like object by obtaining te last character, and the
+    -- string without the last character, given the string is non-empty.
+    -- 'Nothing' otherwise.
     unsnoc :: a -> Maybe (a, Char)
-    unsnoc = fmap (first fromText) . LT.unsnoc . toText
+    unsnoc = fmap (first fromText) . _throughText LT.unsnoc
+    -- | Obtain the length of the string-like object.
     length :: a -> Int
     length = fromIntegral . _throughText LT.length
+    -- | Compare the length of the string with the given length. Returns 'EQ' if
+    -- the string has the same length, 'LT' if the string is shorter, and 'GT'
+    -- if the string is longer. If the length is not explicitly stored, this
+    -- function can stop from the moment the string-like object is exhausted, or
+    -- the threshold has been reached.
     compareLength :: a -> Int -> Ordering
-    compareLength = compareLength . toText
+    compareLength = _throughText compareLength
+    -- | Convert the given string-like object to a 'String'. If not specified,
+    -- it will use 'toText', and then unpack the 'LT.Text' object in a 'String'.
     toString :: a -> String
     toString = LT.unpack . toText
+    -- | Convert a given 'Char' to a string-like object containing the single
+    -- character.
     fromChar :: Char -> a
     fromChar = fromString . pure
+    -- | Concatenate the list of string-like objects to a string-like object.
     strConcat :: [a] -> a
     strConcat = fromText . LT.concat . map toText
+    -- | Create a string-like object by mapping each character to another
+    -- string-like object, and concatenate these.
     strConcatMap :: (Char -> a) -> a -> a
     strConcatMap = _sandwich . LT.concatMap . (toText .)
+    -- | Check if any of the 'Char's in the string-like object satisfy a given
+    -- condition.
     strAny :: (Char -> Bool) -> a -> Bool
     strAny = _throughText . LT.any
+    -- | Check if all of the 'Char's of the string-like object satisfy a given
+    -- condition.
     strAll :: (Char -> Bool) -> a -> Bool
     strAll = _throughText . LT.all
+    -- | Check if the given string is empty.
     strNull :: a -> Bool
     strNull = _throughText LT.null
+    -- | Append two string-like objects to a new string-like object.
     append :: a -> a -> a
     append a = fromText . on (<>) toText a
+    -- | Map all the characters of a string-like object to a new string-like
+    -- object.
     strMap :: (Char -> Char) -> a -> a
     strMap = _sandwich . LT.map
+    -- | Inserts the given string-like object in between the string-like objects
+    -- in the list. For example to make a comma-separated string.
     intercalate :: a -> [a] -> a
     intercalate t = fromText . LT.intercalate (toText t) . map toText
+    -- | Inserts the given character in between the string-like objects in the
+    -- list. For example to make a string of words.
     intersperse :: Char -> a -> a
     intersperse = _sandwich . LT.intersperse
+    -- | Transposes the rows and columns of the list of string-like objects.
     transpose :: [a] -> [a]
     transpose = map fromText . LT.transpose . map toText
+    -- | Calculate the reverse string of the given string.
     reverse :: a -> a
     reverse = _sandwich LT.reverse
+    -- | Convert the given string-like object to its lowercase equivalent.
     toLower :: a -> a
     toLower = _sandwich LT.toLower
+    -- | Convert the given string-like object to its uppercase equivalent.
     toUpper :: a -> a
     toUpper = _sandwich LT.toUpper
+    -- | Convert the given string-like object to its title-case equivalent.
     toTitle :: a -> a
     toTitle = _sandwich LT.toTitle
+    -- | Convert a 'LT.Text' object to the string-like object.
     fromText :: LT.Text -> a
     fromText = fromString . LT.unpack
+    -- | Convert the string-like object to an 'LT.Text' object.
     toText :: a -> LT.Text
     toText = LT.pack . toString
     {-# MINIMAL fromText, toText | toString #-}
@@ -213,5 +287,9 @@ instance StringLike LBS.ByteString where
     toText = decodeUtf8
     fromText = encodeUtf8
 
-convertStringLike :: (StringLike a, StringLike b) => a -> b
+-- | Convert from one 'StringLike' type to another 'StringLike' type. This is
+-- done through a lazy 'LT.Text'.
+convertStringLike :: (StringLike a, StringLike b)
+  => a -- ^ The 'StringLike' object to convert.
+  -> b -- ^ The 'StringLike' object that is the equivalent of the given 'StringLike' object.
 convertStringLike = fromText . toText
