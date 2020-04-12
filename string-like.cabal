@@ -1,0 +1,28 @@
+name:                string-like
+version:             0.1.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/hapytex/string-like#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Willem Van Onsem
+maintainer:          hapytexeu+gh@gmail.com
+copyright:           2020 Willem Van Onsem
+category:            utils
+build-type:          Simple
+extra-source-files:  README.md
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:
+      Data.String.Like
+  build-depends:
+      base >= 4.7 && < 5
+    , bytestring >=0.10
+    , text >= 0.8
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/hapytex/string-like
