@@ -3,6 +3,8 @@
 [![Build Status of the package by Hackage](https://matrix.hackage.haskell.org/api/v2/packages/string-like/badge)](https://matrix.hackage.haskell.org/#/package/string-like)
 [![Hackage version badge](https://img.shields.io/hackage/v/string-like.svg)](https://hackage.haskell.org/package/string-like)
 
+This package is based on the [**`Text.StringLike`** module](https://hackage.haskell.org/package/tagsoup/docs/Text-StringLike.html) of the [**`tagsoup`** package](https://hackage.haskell.org/package/tagsoup).
+
 The package defines a typeclass that can be implemented to provide a uniform interface for `String`-like objects.
 
 The typeclass itself has default implementations that convert the `StringLike`
