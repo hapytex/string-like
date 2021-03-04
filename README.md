@@ -1,5 +1,6 @@
 # string-like
-[![Build Status of the package by Travis](https://travis-ci.com/hapytex/string-like.svg?branch=master)](https://travis-ci.com/hapytex/string-like)
+
+[![Build Status of the package by GitHub actions](https://github.com/hapytex/string-like/actions/workflows/build-ci.yml/badge.svg)](https://github.com/hapytex/string-like/actions/workflows/build-ci.yml)
 [![Build Status of the package by Hackage](https://matrix.hackage.haskell.org/api/v2/packages/string-like/badge)](https://matrix.hackage.haskell.org/#/package/string-like)
 [![Hackage version badge](https://img.shields.io/hackage/v/string-like.svg)](https://hackage.haskell.org/package/string-like)
 
@@ -21,4 +22,3 @@ repository*](https://github.com/hapytex/string-like).
 
 You can contact the package maintainer by sending a mail to
 [`hapytexeu+gh@gmail.com`](mailto:hapytexeu+gh@gmail.com).
-
