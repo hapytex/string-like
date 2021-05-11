@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, Safe #-}
+{-# LANGUAGE CPP, FlexibleInstances, Safe #-}
 
 {-|
 Module      : Data.String.Like
