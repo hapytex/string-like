@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, Safe #-}
+{-# LANGUAGE CPP, FlexibleInstances, Safe #-}
 
 {-|
 Module      : Data.String.Like
@@ -41,6 +41,9 @@ import qualified Data.ByteString.Lazy.Char8 as LBS
 import qualified Data.Char as C
 import Data.List as L
 import Data.Function(on)
+#if __GLASGOW_HASKELL__ < 803
+import Data.Semigroup((<>))
+#endif
 import Data.String(IsString(fromString))
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as LT
