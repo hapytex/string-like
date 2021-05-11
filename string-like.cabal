@@ -1,5 +1,5 @@
 name:                string-like
-version:             0.1.0.0
+version:             0.1.0.1
 synopsis: A package that aims to provide a uniform interface to string-like types.
 description:
   The package defines a typeclass that can be implemented to provide a uniform interface for @String@-like objects.
