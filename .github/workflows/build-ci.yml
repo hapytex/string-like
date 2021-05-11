@@ -3,6 +3,9 @@ on: push
 
 jobs:
   linux1:
+    strategy:
+      matrix:
+        resolver: [lts-10, lts-11, lts-12, lts-13, lts-14, lts-15, lts-16, lts-17]
     name: Build the Haskell software
     runs-on: ubuntu-latest
     steps:
@@ -12,6 +15,9 @@ jobs:
       uses: actions/checkout@v2.3.1
     - name: build haskell project
       uses: hapytex/github-actions/actions/build-haskell-project@master
+      with:
+        resolver: ${{ matrix.resolver }}
+
 
   linux2:
     name: Build the Haddock documentation
@@ -26,6 +32,7 @@ jobs:
       id: haddock
     - name: echo path
       run: "echo '${{ steps.haddock.outputs.haddock-path }}'"
+
 
   linux3:
     name: Look for todos
@@ -48,7 +55,11 @@ jobs:
     - name: look for todos
       uses: hapytex/github-actions/actions/hlint@master
 
+
   linux5:
+    strategy:
+      matrix:
+        resolver: [lts-10, lts-11, lts-12, lts-13, lts-14, lts-15, lts-16, lts-17]
     name: Run the tests
     runs-on: ubuntu-latest
     steps:
@@ -58,11 +69,13 @@ jobs:
       uses: actions/checkout@v2.3.1
     - name: run the tests of the package
       run: stack --no-terminal --skip-ghc-check test
+      with:
+        resolver: ${{ matrix.resolver }}
 
   linux6:
     name: Deploy documentation to GitHub pages
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
     steps:
     - uses: hapytex/github-actions/actions/setup-haskell@master
     - name: checkout code
@@ -70,11 +83,17 @@ jobs:
     - name: make Haddock documentation
       uses: hapytex/github-actions/actions/run-haddock@master
       id: haddock
+    - name: Add cname to the directory
+      uses: hapytex/github-actions/actions/add-cname-to-directory@master
+      with:
+        folder: "${{ steps.haddock.outputs.haddock-path }}"
+        cname: "string-like.django-antipatterns.com"
     - name: deploy the documentation on the GitHub pages
       uses: JamesIves/github-pages-deploy-action@4.0.0
       with:
         branch: gh-pages
         folder: "${{ steps.haddock.outputs.haddock-path }}"
+        single-commit: true
 
   linux7:
     name: Deploy package on hackage
